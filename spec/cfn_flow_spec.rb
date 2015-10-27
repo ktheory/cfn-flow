@@ -56,6 +56,34 @@ describe 'CfnFlow' do
       subject.stack_params('env')[:parameters].must_equal [ { parameter_key: 'ami', parameter_value: 'ami-12345' } ]
     end
 
+    it('fetches stack outputs for parameters with an explicit output') do
+      output_value = 'my-output-value'
+      Aws.config[:cloudformation]= {
+        stub_responses: {
+          describe_stacks: { stacks: [ stub_stack_data.merge(outputs: [{ output_key: "myoutput", output_value: output_value } ]) ] }
+        }
+      }
+
+      stack = {'parameters' => {'output_param' => {'Stack' => 'other-stack', 'Output' => "myoutput"}}}
+      subject.instance_variable_set(:@config, {'service' => 'myservice', 'stack' => stack})
+      subject.stack_params('env')[:parameters].must_equal [ { parameter_key: 'output_param', parameter_value: 'my-output-value' } ]
+    end
+
+    it('fetches stack outputs for parameters with an implied output') do
+      output_value = 'my-output-value'
+      Aws.config[:cloudformation]= {
+        stub_responses: {
+          describe_stacks: { stacks: [ stub_stack_data.merge(outputs: [{ output_key: "myoutput", output_value: output_value } ]) ] }
+        }
+      }
+
+      stack = {'parameters' => {'myoutput' => {'Stack' => 'other-stack'}}}
+      subject.instance_variable_set(:@config, {'service' => 'myservice', 'stack' => stack})
+      subject.stack_params('env')[:parameters].must_equal [ { parameter_key: 'myoutput', parameter_value: 'my-output-value' } ]
+    end
+
+
+
     it('expands tags') do
       stack = {'tags' => {'Deployer' => 'Aaron' } }
       subject.instance_variable_set(:@config, {'service' => 'myservice', 'stack' => stack})

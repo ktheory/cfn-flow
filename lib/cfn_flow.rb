@@ -43,9 +43,18 @@ module CfnFlow
       # Dup & symbolize keys
       params = config['stack'].map{|k,v| [k.to_sym, v]}.to_h
 
+
       # Expand params
       if params[:parameters].is_a? Hash
         expanded_params = params[:parameters].map do |key,value|
+          # Dereference stack output params
+          if value.is_a?(Hash) && value.key?('Stack')
+            stack_name = value['Stack']
+            stack_output_name = value['Output'] || key
+
+            value = StackDescriber.get_output(stack: stack_name, output: stack_output_name)
+          end
+
           { parameter_key: key, parameter_value: value }
         end
         params[:parameters] = expanded_params
@@ -113,6 +122,7 @@ module CfnFlow
     # Clear aws sdk clients & config (for tests)
     def clear!
       @config = @cfn_client = @cfn_resource = nil
+      StackDescriber.stack_cache.clear
     end
 
     # Exit with status code = 1 when raising a Thor::Error
@@ -131,6 +141,7 @@ module CfnFlow
   end
 end
 
+require 'cfn_flow/stack_describer'
 require 'cfn_flow/template'
 require 'cfn_flow/git'
 require 'cfn_flow/event_presenter'

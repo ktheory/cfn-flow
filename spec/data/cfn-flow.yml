@@ -9,5 +9,6 @@ stack:
   template_body: sqs.yml
   parameters:
     AlarmEMail: test@example.com
+
   tags:
     test_tag: hello world
