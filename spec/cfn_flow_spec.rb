@@ -64,7 +64,7 @@ describe 'CfnFlow' do
         }
       }
 
-      stack = {'parameters' => {'output_param' => {'Stack' => 'other-stack', 'Output' => "myoutput"}}}
+      stack = {'parameters' => {'output_param' => {'stack' => 'other-stack', 'output' => "myoutput"}}}
       subject.instance_variable_set(:@config, {'service' => 'myservice', 'stack' => stack})
       subject.stack_params('env')[:parameters].must_equal [ { parameter_key: 'output_param', parameter_value: 'my-output-value' } ]
     end
@@ -77,12 +77,10 @@ describe 'CfnFlow' do
         }
       }
 
-      stack = {'parameters' => {'myoutput' => {'Stack' => 'other-stack'}}}
+      stack = {'parameters' => {'myoutput' => {'stack' => 'other-stack'}}}
       subject.instance_variable_set(:@config, {'service' => 'myservice', 'stack' => stack})
       subject.stack_params('env')[:parameters].must_equal [ { parameter_key: 'myoutput', parameter_value: 'my-output-value' } ]
     end
-
-
 
     it('expands tags') do
       stack = {'tags' => {'Deployer' => 'Aaron' } }

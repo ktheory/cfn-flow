@@ -1,7 +1,7 @@
 require_relative '../helper'
 
-describe 'CfnFlow::StackDescriber' do
-  subject { CfnFlow::StackDescriber }
+describe 'CfnFlow::CachedStack' do
+  subject { CfnFlow::CachedStack }
 
   describe '.stack_cache' do
     it 'defaults to a hash' do
@@ -30,7 +30,7 @@ describe 'CfnFlow::StackDescriber' do
   end
 
   describe 'an instance' do
-    subject { CfnFlow::StackDescriber.new('mystack') }
+    subject { CfnFlow::CachedStack.new('mystack') }
     let(:output_value) { 'myvalue' }
 
     before do
@@ -47,13 +47,13 @@ describe 'CfnFlow::StackDescriber' do
 
     describe "with a missing output" do
       it "should raise an error" do
-        -> { subject.output("no-such-output") }.must_raise(CfnFlow::StackDescriber::MissingOutput)
+        -> { subject.output("no-such-output") }.must_raise(CfnFlow::CachedStack::MissingOutput)
       end
     end
 
     describe "with a missing stack" do
 
-      subject { CfnFlow::StackDescriber.new('no-such-stack') }
+      subject { CfnFlow::CachedStack.new('no-such-stack') }
       before do
         Aws.config[:cloudformation]= {
           stub_responses: {

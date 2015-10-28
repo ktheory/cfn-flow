@@ -1,5 +1,5 @@
 module CfnFlow
-  class StackDescriber
+  class CachedStack
 
     class MissingOutput < StandardError; end
 

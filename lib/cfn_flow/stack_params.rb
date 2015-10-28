@@ -18,16 +18,17 @@ module CfnFlow
       end
     end
 
-    def expand_parameters
+    # Pass cached_stack so we can mock it in specs
+    def expand_parameters(cached_stack: CachedStack)
       return self unless self[:parameters].is_a? Hash
 
       expanded_params = self[:parameters].map do |key,value|
         # Dereference stack output params
-        if value.is_a?(Hash) && value.key?('Stack')
-          stack_name = value['Stack']
-          stack_output_name = value['Output'] || key
+        if value.is_a?(Hash) && value.key?('stack')
+          stack_name = value['stack']
+          stack_output_name = value['output'] || key
 
-          value = StackDescriber.get_output(stack: stack_name, output: stack_output_name)
+          value = cached_stack.get_output(stack: stack_name, output: stack_output_name)
         end
 
         { parameter_key: key, parameter_value: value }
@@ -54,9 +55,9 @@ module CfnFlow
       self.merge(tags: tags)
     end
 
-    def expand_template_body
+    def expand_template_body(templater: CfnFlow::Template)
       return self unless self[:template_body].is_a? String
-      body = CfnFlow::Template.new(self[:template_body]).to_json
+      body = templater.new(self[:template_body]).to_json
       self.merge(template_body: body)
     rescue CfnFlow::Template::Error
       # Do nothing
